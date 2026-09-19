@@ -7,7 +7,7 @@ help:
 	@echo "  almalinux10 - Build for AlmaLinux 10"
 
 .PHONY: all
-all:
+all: almalinux10
 
 .PHONY: almalinux10
 almalinux10:
