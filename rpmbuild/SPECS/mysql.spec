@@ -854,12 +854,9 @@ fi
 mkdir debug
 (
   cd debug
-  # Attempt to remove any optimisation flags from the debug build
-%if 0%{?rhel} == 10
-  optflags=$(echo "%{optflags}" | sed -e 's/-O2 / /' -e 's/-Wp,-U_FORTIFY_SOURCE,-D_FORTIFY_SOURCE=[0-9]/ /' -e 's/%{_lto_cflags}/ /')
-%else
-  optflags=$(echo "%{optflags}" | sed -e 's/-O2 / /' -e 's/-Wp,-D_FORTIFY_SOURCE=2/ /' -e 's/%{_lto_cflags}/ /')
-%endif
+  # Remove optimisation flags and FORTIFY_SOURCE, which requires optimisation.
+  # RPM flags may include -U_FORTIFY_SOURCE before the definition.
+  optflags=$(echo "%{optflags}" | sed -E -e 's/-O2 / /' -e 's/-Wp,(-U_FORTIFY_SOURCE,)?-D_FORTIFY_SOURCE=[0-9]+/ /g' -e 's/%{_lto_cflags}/ /')
   %{cmake3} ../%{src_dir} \
            -DBUILD_CONFIG=mysql_release \
            -DINSTALL_LAYOUT=RPM \

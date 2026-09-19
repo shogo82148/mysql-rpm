@@ -31,6 +31,10 @@ rockylinux9: ## Build for Rocky Linux 9
 rockylinux8: ## Build for Rocky Linux 8
 	./build.sh rockylinux8
 
+.PHONY: amazonlinux2027
+amazonlinux2027: ## Build for Amazon Linux 2027
+	./build.sh amazonlinux2027
+
 .PHONY: amazonlinux2023
 amazonlinux2023: ## Build for Amazon Linux 2023
 	./build.sh amazonlinux2023
