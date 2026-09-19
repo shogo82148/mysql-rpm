@@ -1,4 +1,4 @@
-name: Update MySQL RPM Spec
+name: Update MySQL RPM Specg
 on:
   schedule:
     - cron: "39 16 * * *"
@@ -17,6 +17,6 @@ jobs:
         with:
           persist-credentials: false
       - name: Update spec
-        run: ./update-spec.sh
+        run: ./download-source.sh
       - name: create a pull request if needed
         uses: shogo82148/actions-commit-and-create-pr@b1322fe9da4037e9720e34ea221997cffcd3498d # v1.1.4
