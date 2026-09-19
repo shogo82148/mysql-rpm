@@ -1,0 +1,64 @@
+--- a/storage/ndb/src/common/util/testSecureSocket.cpp
++++ b/storage/ndb/src/common/util/testSecureSocket.cpp
+@@ -164,19 +164,26 @@
+ 
+ /*** Server ****/
+ 
+-class EchoSession : public SocketServer::Session {
++// Construct the owned socket before Session stores and logs its reference.
++class EchoSessionSocket {
++ protected:
++  explicit EchoSessionSocket(NdbSocket &&socket)
++      : m_secure_socket(std::move(socket)) {}
++  NdbSocket m_secure_socket;
++};
++
++class EchoSession : private EchoSessionSocket, public SocketServer::Session {
+  public:
+   EchoSession(NdbSocket &&s, bool sink, SSL_CTX *ctx)
+-      : SocketServer::Session(m_secure_socket),
++      : EchoSessionSocket(std::move(s)),
++        SocketServer::Session(m_secure_socket),
+         m_sink(sink),
+-        m_ssl_ctx(ctx),
+-        m_secure_socket(std::move(s)) {}
++        m_ssl_ctx(ctx) {}
+   void runSession() override;
+ 
+  private:
+   bool m_sink;
+   SSL_CTX *m_ssl_ctx;
+-  NdbSocket m_secure_socket;
+ };
+ 
+ class PlainService : public SocketServer::Service {
+--- a/storage/ndb/src/common/util/testTlsKeyManager.cpp
++++ b/storage/ndb/src/common/util/testTlsKeyManager.cpp
+@@ -283,15 +283,22 @@
+   return (r == 1);
+ }
+ 
+-class Session : public SocketServer::Session {
++// Construct the owned socket before Session stores and logs its reference.
++class SessionSocket {
++ protected:
++  explicit SessionSocket(NdbSocket &&socket) : m_socket(std::move(socket)) {}
++  NdbSocket m_socket;
++};
++
++class Session : private SessionSocket, public SocketServer::Session {
++  using SessionSocket::m_socket;
+   class Service *m_server;
+-  NdbSocket m_socket;
+ 
+  public:
+   Session(NdbSocket &&socket, class Service *server)
+-      : SocketServer::Session(m_socket),
+-        m_server(server),
+-        m_socket(std::move(socket)) {}
++      : SessionSocket(std::move(socket)),
++        SocketServer::Session(m_socket),
++        m_server(server) {}
+   void runSession() override;
+ };
+ 
