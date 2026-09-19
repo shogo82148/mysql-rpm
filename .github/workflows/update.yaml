@@ -1,3 +1,4 @@
+name: Update MySQL RPM Spec
 on:
   schedule:
     - cron: "39 16 * * *"
