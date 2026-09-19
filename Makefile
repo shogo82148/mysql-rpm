@@ -2,27 +2,27 @@ MYSQL_VERSION := 9.7.2
 
 .PHONY: help
 help:
-	@echo "Makefile targets:"
-	@echo "  all    - Build everything"
-	@echo "  almalinux10 - Build for AlmaLinux 10"
-	@echo "  rockylinux10 - Build for Rocky Linux 10"
-	@echo "  amazonlinux2023 - Build for Amazon Linux 2023"
+	@grep -E '^[0-9a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
 
 .PHONY: all
-all: almalinux10 rockylinux10 rockylinux9 amazonlinux2023
+all: almalinux10 almalinux9 rockylinux10 rockylinux9 amazonlinux2023
 
 .PHONY: almalinux10
-almalinux10:
+almalinux10: ## Build for AlmaLinux 10
 	./build.sh almalinux10
 
+.PHONY: almalinux9
+almalinux9: ## Build for AlmaLinux 9
+	./build.sh almalinux9
+
 .PHONY: rockylinux10
-rockylinux10:
+rockylinux10: ## Build for Rocky Linux 10
 	./build.sh rockylinux10
 
 .PHONY: rockylinux9
-rockylinux9:
+rockylinux9: ## Build for Rocky Linux 9
 	./build.sh rockylinux9
 
 .PHONY: amazonlinux2023
-amazonlinux2023:
+amazonlinux2023: ## Build for Amazon Linux 2023
 	./build.sh amazonlinux2023
