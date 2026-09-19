@@ -9,11 +9,15 @@ help:
 	@echo "  amazonlinux2023 - Build for Amazon Linux 2023"
 
 .PHONY: all
-all: almalinux10 rockylinux10 amazonlinux2023
+all: almalinux10 almalinux9 rockylinux10 amazonlinux2023
 
 .PHONY: almalinux10
 almalinux10:
 	./build.sh almalinux10
+
+.PHONY: almalinux9
+almalinux9:
+	./build.sh almalinux9
 
 .PHONY: rockylinux10
 rockylinux10:
