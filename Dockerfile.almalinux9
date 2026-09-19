@@ -1,16 +1,15 @@
 FROM almalinux:9
 ENV HOME=/
 RUN dnf update -y
-RUN dnf install -y rpmdevtools
+RUN dnf install -y rpmdevtools dnf-plugins-core epel-release
 
 RUN rpmdev-setuptree
 RUN echo '%dist   .el9' >> /.rpmmacros
 COPY ./rpmbuild/ /rpmbuild/
 RUN chown -R root:root /rpmbuild
-RUN dnf install -y dnf-plugins-core
-RUN dnf install -y epel-release
 RUN dnf --enablerepo=crb builddep -y /rpmbuild/SPECS/mysql.spec
-RUN spectool -g -R /rpmbuild/SPECS/mysql.spec
-RUN rpmbuild -ba /rpmbuild/SPECS/mysql.spec
-RUN tar -czf /tmp/mysql.tar.gz -C /rpmbuild RPMS SRPMS
+RUN spectool -g -R /rpmbuild/SPECS/mysql.spec && \
+  rpmbuild -ba /rpmbuild/SPECS/mysql.spec && \
+  tar -czf /tmp/mysql.tar.gz -C /rpmbuild RPMS SRPMS && \
+  rm -rf /rpmbuild
 CMD ["/bin/true"]
