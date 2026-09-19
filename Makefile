@@ -5,10 +5,15 @@ help:
 	@echo "Makefile targets:"
 	@echo "  all    - Build everything"
 	@echo "  almalinux10 - Build for AlmaLinux 10"
+	@echo "  rockylinux10 - Build for Rocky Linux 10"
 
 .PHONY: all
-all: almalinux10
+all: almalinux10 rockylinux10
 
 .PHONY: almalinux10
 almalinux10:
 	./build.sh almalinux10
+
+.PHONY: rockylinux10
+rockylinux10:
+	./build.sh rockylinux10
