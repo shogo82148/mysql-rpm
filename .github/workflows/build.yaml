@@ -28,3 +28,8 @@ jobs:
           make ${{ matrix.distribution}}
         env:
           PLATFORM: ${{ matrix.architecture }}
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v7
+        with:
+          name: ${{ matrix.distribution}}-${{ matrix.architecture }}
+          path: ${{ matrix.distribution}}.build/
