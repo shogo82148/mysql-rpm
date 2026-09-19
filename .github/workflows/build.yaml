@@ -16,6 +16,7 @@ jobs:
           - amazonlinux2023
           - almalinux10
           - rockylinux10
+          - rockylinux9
         architecture:
           - amd64
           - arm64
