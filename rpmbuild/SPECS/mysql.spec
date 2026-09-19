@@ -856,7 +856,7 @@ mkdir debug
   cd debug
   # Remove optimisation flags and FORTIFY_SOURCE, which requires optimisation.
   # RPM flags may include -U_FORTIFY_SOURCE before the definition.
-  optflags=$(echo "%{optflags}" | sed -E -e 's/-O2 / /' -e 's/-Wp,(-U_FORTIFY_SOURCE,)?-D_FORTIFY_SOURCE=[0-9]+/ /g' -e 's/%{_lto_cflags}/ /')
+  optflags=$(echo "%{optflags}" | sed -E -e 's/-O2 / /' -e 's/-Wp,(-U_FORTIFY_SOURCE,)?-D_FORTIFY_SOURCE=[0-9]+/ /g' -e 's/%\{_lto_cflags\}/ /')
   %{cmake3} ../%{src_dir} \
            -DBUILD_CONFIG=mysql_release \
            -DINSTALL_LAYOUT=RPM \
