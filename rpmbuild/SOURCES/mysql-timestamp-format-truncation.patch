@@ -1,0 +1,15 @@
+--- a/sql/server_component/mysql_timestamp_imp.cc
++++ b/sql/server_component/mysql_timestamp_imp.cc
+@@ -79,9 +79,10 @@
+       dir = '+';
+       tim = -tim;
+     }
++    const auto offset = static_cast<unsigned long>(tim);
+     snprintf(tzinfo, sizeof(tzinfo), "%c%02u:%02u", dir,
+-             (unsigned int)((tim / (60 * 60)) % 100),
+-             (unsigned int)((tim / 60) % 60));
++             (unsigned int)((offset / (60 * 60)) % 100),
++             (unsigned int)((offset / 60) % 60));
+   } else {
+     assert(false);
+   }

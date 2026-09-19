@@ -149,6 +149,8 @@ Version:        9.7.2
 Release:        1%{?commercial:.1}%{?dist}
 License:        Copyright (c) 2000, 2026, %{mysql_vendor}. Under %{?license_type} license as shown in the Description field.
 Source0:        https://cdn.mysql.com/Downloads/MySQL-9.7/%{src_dir}.tar.gz
+# Keep timezone fields bounded for GCC 16's format-truncation analysis.
+Patch0:         mysql-timestamp-format-truncation.patch
 URL:            https://www.mysql.com/
 Packager:       MySQL Release Engineering <mysql-build@oss.oracle.com>
 Vendor:         %{mysql_vendor}
@@ -779,6 +781,7 @@ trademark of %{mysql_vendor}
 %else
 %setup -q -T -a 0 -c -n %{src_dir}
 %endif # 0%{?compatlib}
+%patch -P 0 -p1 -d %{src_dir}
 mkdir -p %{src_dir}/mysql-9.7
 cp -p %{license_files_server} %{src_dir}/mysql-9.7
 
