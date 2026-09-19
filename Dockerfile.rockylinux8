@@ -1,0 +1,16 @@
+FROM rockylinux/rockylinux:8
+ENV HOME=/
+RUN dnf update -y
+RUN dnf install -y rpmdevtools
+
+RUN rpmdev-setuptree
+RUN echo '%dist   .el8' >> /.rpmmacros
+COPY ./rpmbuild/ /rpmbuild/
+RUN chown -R root:root /rpmbuild
+RUN dnf install -y dnf-plugins-core
+RUN dnf install -y epel-release
+RUN dnf --enablerepo=powertools builddep -y /rpmbuild/SPECS/mysql.spec
+RUN spectool -g -R /rpmbuild/SPECS/mysql.spec
+RUN rpmbuild -ba /rpmbuild/SPECS/mysql.spec
+RUN tar -czf /tmp/mysql.tar.gz -C /rpmbuild RPMS SRPMS
+CMD ["/bin/true"]
