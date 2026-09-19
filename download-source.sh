@@ -12,4 +12,4 @@ mkdir -p "$ROOT/rpmbuild-orig"
 docker run \
   --rm \
   -v "$ROOT/rpmbuild-orig":/rpmbuild \
-  almalinux:10 bash -c "cd /root && dnf install -y https://dev.mysql.com/get/mysql97-community-release-el10-1.noarch.rpm && dnf download --source mysql-community-server && rpm -ivh *.src.rpm && cp -r rpmbuild /rpmbuild"
+  almalinux:10 bash -c "cd /root && dnf install -y https://dev.mysql.com/get/mysql97-community-release-el10-1.noarch.rpm && dnf download --source mysql-community-server && rpm -ivh *.src.rpm && cp -r rpmbuild/* /rpmbuild"
