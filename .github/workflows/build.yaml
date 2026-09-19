@@ -19,6 +19,7 @@ jobs:
           - almalinux8
           - rockylinux10
           - rockylinux9
+          - rockylinux8
         architecture:
           - amd64
           - arm64
