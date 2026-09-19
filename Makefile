@@ -5,7 +5,7 @@ help:
 	@grep -E '^[0-9a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
 
 .PHONY: all
-all: almalinux10 almalinux9 rockylinux10 rockylinux9 amazonlinux2023
+all: almalinux10 almalinux9 almalinux8 rockylinux10 rockylinux9 amazonlinux2023
 
 .PHONY: almalinux10
 almalinux10: ## Build for AlmaLinux 10
@@ -14,6 +14,10 @@ almalinux10: ## Build for AlmaLinux 10
 .PHONY: almalinux9
 almalinux9: ## Build for AlmaLinux 9
 	./build.sh almalinux9
+
+.PHONY: almalinux8
+almalinux8: ## Build for AlmaLinux 8
+	./build.sh almalinux8
 
 .PHONY: rockylinux10
 rockylinux10: ## Build for Rocky Linux 10
