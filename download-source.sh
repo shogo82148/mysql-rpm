@@ -6,10 +6,10 @@ set -euo pipefail
 
 ROOT=$(git rev-parse --show-toplevel)
 
-rm -rf "$ROOT/rpmbuild"
-mkdir -p "$ROOT/rpmbuild"
+rm -rf "$ROOT/rpmbuild-orig"
+mkdir -p "$ROOT/rpmbuild-orig"
 
 docker run \
   --rm \
-  -v "$ROOT/rpmbuild":/rpmbuild \
+  -v "$ROOT/rpmbuild-orig":/rpmbuild \
   almalinux:10 bash -c "cd /root && dnf install -y https://dev.mysql.com/get/mysql97-community-release-el10-1.noarch.rpm && dnf download --source mysql-community-server && rpm -ivh *.src.rpm && cp -r rpmbuild /rpmbuild"
