@@ -155,6 +155,8 @@ Patch0:         mysql-timestamp-format-truncation.patch
 Patch1:         mysql-myisam-unused-counters.patch
 # Construct test session sockets before the base class accesses them.
 Patch2:         mysql-ndb-session-initialization.patch
+# Support RPM's -fno-delete-null-pointer-checks in bundled Abseil.
+Patch3:         mysql-abseil-constexpr-hash.patch
 URL:            https://www.mysql.com/
 Packager:       MySQL Release Engineering <mysql-build@oss.oracle.com>
 Vendor:         %{mysql_vendor}
@@ -788,6 +790,7 @@ trademark of %{mysql_vendor}
 %patch -P 0 -p1 -d %{src_dir}
 %patch -P 1 -p1 -d %{src_dir}
 %patch -P 2 -p1 -d %{src_dir}
+%patch -P 3 -p1 -d %{src_dir}
 mkdir -p %{src_dir}/mysql-9.7
 cp -p %{license_files_server} %{src_dir}/mysql-9.7
 
