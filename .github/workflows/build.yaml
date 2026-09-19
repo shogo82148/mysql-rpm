@@ -1,0 +1,35 @@
+name: Build MySQL RPMs
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: case(matrix.architecture == 'amd64', 'ubuntu-26.04', 'ubuntu-26.04-arm')
+    timeout-minutes: 360
+    strategy:
+      fail-fast: false
+      matrix:
+        distribution:
+          - amazonlinux2023
+          - almalinux10
+          - rockylinux10
+        architecture:
+          - amd64
+          - arm64
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+      - name: Build MySQL RPMs
+        run: |
+          make ${{ matrix.distribution}}
+        env:
+          PLATFORM: ${{ matrix.architecture }}
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: ${{ matrix.distribution}}-${{ matrix.architecture }}
+          path: ${{ matrix.distribution}}.build/
