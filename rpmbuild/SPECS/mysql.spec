@@ -193,6 +193,19 @@ BuildRequires:  cmake3 >= 3.14.6
 %{?el7:BuildRequires:  devtoolset-11-binutils}
 %{?el7:BuildRequires:  devtoolset-11-dwz}
 %if 0%{?rhel} == 8 || 0%{?rhel} == 9
+# rpcgen (used to generate xcom_vp.h) hard-codes /lib/cpp as its C
+# preprocessor, but only the gcc-toolset SCL compiler is installed
+# below, which lives under /opt/rh and never provides /lib/cpp.
+# Pull in the base "cpp" package so rpcgen can find it.
+BuildRequires:  cpp
+# MySQL builds its own bundled libfido2 by default (WITH_FIDO=bundled),
+# but that still requires libudev.h/libudev.so to build. On el8/el9
+# those are provided by systemd-devel (there is no separate
+# libudev-devel package, unlike el10). Without it, FIDO_FOUND is
+# forced to FALSE and CMake silently skips the authentication_webauthn*
+# plugins, which %files unconditionally expects whenever ssl_default
+# is set.
+BuildRequires:  systemd-devel
 %if 0%{?compatlib}
 BuildRequires:  gcc-toolset-12-annobin-annocheck
 BuildRequires:  gcc-toolset-12-annobin-plugin-gcc
