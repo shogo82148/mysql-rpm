@@ -159,6 +159,8 @@ Patch2:         mysql-ndb-session-initialization.patch
 Patch3:         mysql-abseil-constexpr-hash.patch
 # Message formatting does not depend on the object under construction.
 Patch4:         mysql-xclient-static-message-helper.patch
+# Extend generated Bison parser warning handling to GCC 16.
+Patch5:         mysql-bison-unused-counters.patch
 URL:            https://www.mysql.com/
 Packager:       MySQL Release Engineering <mysql-build@oss.oracle.com>
 Vendor:         %{mysql_vendor}
@@ -794,6 +796,7 @@ trademark of %{mysql_vendor}
 %patch -P 2 -p1 -d %{src_dir}
 %patch -P 3 -p1 -d %{src_dir}
 %patch -P 4 -p1 -d %{src_dir}
+%patch -P 5 -p1 -d %{src_dir}
 mkdir -p %{src_dir}/mysql-9.7
 cp -p %{license_files_server} %{src_dir}/mysql-9.7
 
