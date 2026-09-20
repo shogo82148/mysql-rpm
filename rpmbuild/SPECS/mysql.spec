@@ -947,13 +947,20 @@ mkdir debug
 mkdir release
 (
   cd release
+  release_optflags="%{optflags}"
+  # Amazon Linux 2027's binutils `as` crashes with an assertion failure
+  # (bfd/elf.c:3571) when assembling the parallel LTO partitions used by
+  # some of the libmysqlgcs unit tests; disable LTO on that distro.
+  if [ 0%{?amzn2027} -gt 0 ]; then
+    release_optflags=$(echo "$release_optflags" | sed -E -e 's/-flto=auto -ffat-lto-objects/ /')
+  fi
   %{cmake3} ../%{src_dir} \
            %{?pgo:-DFPROFILE_GENERATE=1} \
            -DBUILD_CONFIG=mysql_release \
            -DINSTALL_LAYOUT=RPM \
            -DCMAKE_BUILD_TYPE=RelWithDebInfo \
-           -DCMAKE_C_FLAGS="%{optflags}" \
-           -DCMAKE_CXX_FLAGS="%{optflags}" \
+           -DCMAKE_C_FLAGS="$release_optflags" \
+           -DCMAKE_CXX_FLAGS="$release_optflags" \
 %if 0%{?ssl_default}
            -DWITH_AUTHENTICATION_CLIENT_PLUGINS=1 \
 %else
