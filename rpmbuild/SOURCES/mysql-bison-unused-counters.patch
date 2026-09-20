@@ -1,0 +1,24 @@
+--- a/sql/CMakeLists.txt
++++ b/sql/CMakeLists.txt
+@@ -724,8 +724,9 @@
+     debug_lock_order.cc
+     )
+ 
+-  # Bison output uses undefined symbols for clang >= v15
+-  IF(MY_COMPILER_IS_CLANG AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 14)
++  # Bison output has write-only counters with Clang >= 15 and GCC >= 16
++  IF((MY_COMPILER_IS_CLANG AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 14) OR
++     (MY_COMPILER_IS_GNU AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 16))
+     ADD_COMPILE_FLAGS(${CMAKE_BINARY_DIR}/sql/debug_lo_parser.cc
+                       COMPILE_FLAGS "-Wno-unused-but-set-variable")
+   ENDIF()
+@@ -903,7 +904,8 @@
+   ADD_COMPILE_FLAGS(${CMAKE_CURRENT_BINARY_DIR}/sql_yacc.cc
+                     ${CMAKE_CURRENT_BINARY_DIR}/sql_hints.yy.cc
+                     COMPILE_FLAGS "-Wno-undef -Wno-unused-label")
+-  IF(MY_COMPILER_IS_CLANG AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 14)
++  IF((MY_COMPILER_IS_CLANG AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 14) OR
++     (MY_COMPILER_IS_GNU AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 16))
+     ADD_COMPILE_FLAGS(${CMAKE_CURRENT_BINARY_DIR}/sql_yacc.cc
+                       ${CMAKE_CURRENT_BINARY_DIR}/sql_hints.yy.cc
+                       COMPILE_FLAGS "-Wno-unused-but-set-variable")

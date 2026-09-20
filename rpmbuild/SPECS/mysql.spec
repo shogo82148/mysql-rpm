@@ -149,6 +149,18 @@ Version:        9.7.2
 Release:        1%{?commercial:.1}%{?dist}
 License:        Copyright (c) 2000, 2026, %{mysql_vendor}. Under %{?license_type} license as shown in the Description field.
 Source0:        https://cdn.mysql.com/Downloads/MySQL-9.7/%{src_dir}.tar.gz
+# Keep timezone fields bounded for GCC 16's format-truncation analysis.
+Patch0:         mysql-timestamp-format-truncation.patch
+# Remove write-only MyISAM loop counters diagnosed by GCC 16.
+Patch1:         mysql-myisam-unused-counters.patch
+# Construct test session sockets before the base class accesses them.
+Patch2:         mysql-ndb-session-initialization.patch
+# Support RPM's -fno-delete-null-pointer-checks in bundled Abseil.
+Patch3:         mysql-abseil-constexpr-hash.patch
+# Message formatting does not depend on the object under construction.
+Patch4:         mysql-xclient-static-message-helper.patch
+# Extend generated Bison parser warning handling to GCC 16.
+Patch5:         mysql-bison-unused-counters.patch
 URL:            https://www.mysql.com/
 Packager:       MySQL Release Engineering <mysql-build@oss.oracle.com>
 Vendor:         %{mysql_vendor}
@@ -779,6 +791,12 @@ trademark of %{mysql_vendor}
 %else
 %setup -q -T -a 0 -c -n %{src_dir}
 %endif # 0%{?compatlib}
+%patch -P 0 -p1 -d %{src_dir}
+%patch -P 1 -p1 -d %{src_dir}
+%patch -P 2 -p1 -d %{src_dir}
+%patch -P 3 -p1 -d %{src_dir}
+%patch -P 4 -p1 -d %{src_dir}
+%patch -P 5 -p1 -d %{src_dir}
 mkdir -p %{src_dir}/mysql-9.7
 cp -p %{license_files_server} %{src_dir}/mysql-9.7
 
