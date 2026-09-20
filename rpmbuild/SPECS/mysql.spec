@@ -157,6 +157,8 @@ Patch1:         mysql-myisam-unused-counters.patch
 Patch2:         mysql-ndb-session-initialization.patch
 # Support RPM's -fno-delete-null-pointer-checks in bundled Abseil.
 Patch3:         mysql-abseil-constexpr-hash.patch
+# Message formatting does not depend on the object under construction.
+Patch4:         mysql-xclient-static-message-helper.patch
 URL:            https://www.mysql.com/
 Packager:       MySQL Release Engineering <mysql-build@oss.oracle.com>
 Vendor:         %{mysql_vendor}
@@ -791,6 +793,7 @@ trademark of %{mysql_vendor}
 %patch -P 1 -p1 -d %{src_dir}
 %patch -P 2 -p1 -d %{src_dir}
 %patch -P 3 -p1 -d %{src_dir}
+%patch -P 4 -p1 -d %{src_dir}
 mkdir -p %{src_dir}/mysql-9.7
 cp -p %{license_files_server} %{src_dir}/mysql-9.7
 
