@@ -171,6 +171,8 @@ Patch8:         mysql-plugin-unused-counter.patch
 Patch9:         mysql-profile-unused-counter.patch
 # Remove a write-only semijoin decorrelation loop counter flagged by GCC 16.
 Patch10:        mysql-resolver-unused-counter.patch
+# Remove a write-only field-list loop counter flagged by GCC 16.
+Patch11:        mysql-table-unused-counter.patch
 URL:            https://www.mysql.com/
 Packager:       MySQL Release Engineering <mysql-build@oss.oracle.com>
 Vendor:         %{mysql_vendor}
@@ -812,6 +814,7 @@ trademark of %{mysql_vendor}
 %patch -P 8 -p1 -d %{src_dir}
 %patch -P 9 -p1 -d %{src_dir}
 %patch -P 10 -p1 -d %{src_dir}
+%patch -P 11 -p1 -d %{src_dir}
 mkdir -p %{src_dir}/mysql-9.7
 cp -p %{license_files_server} %{src_dir}/mysql-9.7
 
