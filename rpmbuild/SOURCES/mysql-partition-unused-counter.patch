@@ -1,0 +1,21 @@
+--- a/sql/sql_partition.cc
++++ b/sql/sql_partition.cc
+@@ -3710,7 +3710,7 @@
+                        const key_range *key_spec, part_id_range *part_spec) {
+   partition_info *part_info = table->part_info;
+   const uint num_parts = part_info->get_tot_partitions();
+-  uint i, part_id;
++  uint i;
+   uint sub_part = num_parts;
+   uint32 part_part = num_parts;
+   KEY *key_info = nullptr;
+@@ -3838,8 +3838,7 @@
+       part_spec->start_part = sub_part;
+       part_spec->end_part =
+           sub_part + (part_info->num_subparts * (part_info->num_parts - 1));
+-      for (i = 0, part_id = sub_part; i < part_info->num_parts;
+-           i++, part_id += part_info->num_subparts)
++      for (i = 0; i < part_info->num_parts; i++)
+         ;  // Set bit part_id in bit array
+     }
+   }
