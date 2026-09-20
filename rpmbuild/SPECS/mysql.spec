@@ -954,11 +954,20 @@ mkdir release
   if [ 0%{?amzn2027} -gt 0 ]; then
     release_optflags=$(echo "$release_optflags" | sed -E -e 's/-flto=auto -ffat-lto-objects/ /')
   fi
+  # On distros where /usr/sbin is merged into /usr/bin (%{_sbindir} ==
+  # %{_bindir}, e.g. Amazon Linux 2027), tell CMake to install mysqld
+  # into "bin" too, otherwise it installs to a literal "sbin" directory
+  # that %files (using %{_sbindir}) can never find.
+  sbin_merge_option=
+  if [ "%{_sbindir}" = "%{_bindir}" ]; then
+    sbin_merge_option=-DLINUX_FEDORA_SBIN_MERGE=1
+  fi
   %{cmake3} ../%{src_dir} \
            %{?pgo:-DFPROFILE_GENERATE=1} \
            -DBUILD_CONFIG=mysql_release \
            -DINSTALL_LAYOUT=RPM \
            -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+           $sbin_merge_option \
            -DCMAKE_C_FLAGS="$release_optflags" \
            -DCMAKE_CXX_FLAGS="$release_optflags" \
 %if 0%{?ssl_default}
@@ -1018,11 +1027,17 @@ mkdir release
   if [ 0%{?amzn2027} -gt 0 ]; then
     release_optflags=$(echo "$release_optflags" | sed -E -e 's/-flto=auto -ffat-lto-objects/ /')
   fi
+  # See the sbin-merge note above the initial release build.
+  sbin_merge_option=
+  if [ "%{_sbindir}" = "%{_bindir}" ]; then
+    sbin_merge_option=-DLINUX_FEDORA_SBIN_MERGE=1
+  fi
   cmake3 ../%{src_dir} \
            -DFPROFILE_USE=1 \
            -DBUILD_CONFIG=mysql_release \
            -DINSTALL_LAYOUT=RPM \
            -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+           $sbin_merge_option \
            -DCMAKE_C_FLAGS="$release_optflags" \
            -DCMAKE_CXX_FLAGS="$release_optflags" \
 %if 0%{?ssl_default}
