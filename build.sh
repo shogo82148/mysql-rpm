@@ -12,8 +12,12 @@ TARGZ_FILE=mysql.tar.gz
 cd "$ROOT"
 
 # build MySQL package
+# --progress=plain avoids docker buildx's TTY progress renderer, which can
+# overwrite/interleave output lines when captured to a log file, making
+# build logs unreliable for debugging.
 docker buildx build \
     --load \
+    --progress=plain \
     --platform "$PLATFORM" \
     --file "Dockerfile.$DISTRO" \
     -t "$IMAGE_NAME" "$ROOT"
