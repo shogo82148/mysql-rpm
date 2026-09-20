@@ -161,6 +161,20 @@ Patch3:         mysql-abseil-constexpr-hash.patch
 Patch4:         mysql-xclient-static-message-helper.patch
 # Extend generated Bison parser warning handling to GCC 16.
 Patch5:         mysql-bison-unused-counters.patch
+# Remove a write-only join-deduplication loop counter flagged by GCC 16.
+Patch6:         mysql-sql-executor-unused-counter.patch
+# Remove a write-only partitioning loop counter flagged by GCC 16.
+Patch7:         mysql-partition-unused-counter.patch
+# Remove a write-only plugin-option loop counter flagged by GCC 16.
+Patch8:         mysql-plugin-unused-counter.patch
+# Remove a write-only profiling loop counter flagged by GCC 16.
+Patch9:         mysql-profile-unused-counter.patch
+# Remove a write-only semijoin decorrelation loop counter flagged by GCC 16.
+Patch10:        mysql-resolver-unused-counter.patch
+# Remove a write-only field-list loop counter flagged by GCC 16.
+Patch11:        mysql-table-unused-counter.patch
+# Remove a write-only field-list loop counter flagged by GCC 16.
+Patch12:        mysql-handler0alter-unused-counter.patch
 URL:            https://www.mysql.com/
 Packager:       MySQL Release Engineering <mysql-build@oss.oracle.com>
 Vendor:         %{mysql_vendor}
@@ -797,6 +811,13 @@ trademark of %{mysql_vendor}
 %patch -P 3 -p1 -d %{src_dir}
 %patch -P 4 -p1 -d %{src_dir}
 %patch -P 5 -p1 -d %{src_dir}
+%patch -P 6 -p1 -d %{src_dir}
+%patch -P 7 -p1 -d %{src_dir}
+%patch -P 8 -p1 -d %{src_dir}
+%patch -P 9 -p1 -d %{src_dir}
+%patch -P 10 -p1 -d %{src_dir}
+%patch -P 11 -p1 -d %{src_dir}
+%patch -P 12 -p1 -d %{src_dir}
 mkdir -p %{src_dir}/mysql-9.7
 cp -p %{license_files_server} %{src_dir}/mysql-9.7
 
@@ -926,13 +947,29 @@ mkdir debug
 mkdir release
 (
   cd release
+  release_optflags="%{optflags}"
+  # Amazon Linux 2027's binutils `as` crashes with an assertion failure
+  # (bfd/elf.c:3571) when assembling the parallel LTO partitions used by
+  # some of the libmysqlgcs unit tests; disable LTO on that distro.
+  if [ 0%{?amzn2027} -gt 0 ]; then
+    release_optflags=$(echo "$release_optflags" | sed -E -e 's/-flto=auto -ffat-lto-objects/ /')
+  fi
+  # On distros where /usr/sbin is merged into /usr/bin (%{_sbindir} ==
+  # %{_bindir}, e.g. Amazon Linux 2027), tell CMake to install mysqld
+  # into "bin" too, otherwise it installs to a literal "sbin" directory
+  # that %files (using %{_sbindir}) can never find.
+  sbin_merge_option=
+  if [ "%{_sbindir}" = "%{_bindir}" ]; then
+    sbin_merge_option=-DLINUX_FEDORA_SBIN_MERGE=1
+  fi
   %{cmake3} ../%{src_dir} \
            %{?pgo:-DFPROFILE_GENERATE=1} \
            -DBUILD_CONFIG=mysql_release \
            -DINSTALL_LAYOUT=RPM \
            -DCMAKE_BUILD_TYPE=RelWithDebInfo \
-           -DCMAKE_C_FLAGS="%{optflags}" \
-           -DCMAKE_CXX_FLAGS="%{optflags}" \
+           $sbin_merge_option \
+           -DCMAKE_C_FLAGS="$release_optflags" \
+           -DCMAKE_CXX_FLAGS="$release_optflags" \
 %if 0%{?ssl_default}
            -DWITH_AUTHENTICATION_CLIENT_PLUGINS=1 \
 %else
@@ -985,13 +1022,24 @@ mkdir release
   # Build again with profile data present
   rm -rf release
   mkdir release && pushd release
+  release_optflags="%{optflags}"
+  # See the LTO note above the initial release build.
+  if [ 0%{?amzn2027} -gt 0 ]; then
+    release_optflags=$(echo "$release_optflags" | sed -E -e 's/-flto=auto -ffat-lto-objects/ /')
+  fi
+  # See the sbin-merge note above the initial release build.
+  sbin_merge_option=
+  if [ "%{_sbindir}" = "%{_bindir}" ]; then
+    sbin_merge_option=-DLINUX_FEDORA_SBIN_MERGE=1
+  fi
   cmake3 ../%{src_dir} \
            -DFPROFILE_USE=1 \
            -DBUILD_CONFIG=mysql_release \
            -DINSTALL_LAYOUT=RPM \
            -DCMAKE_BUILD_TYPE=RelWithDebInfo \
-           -DCMAKE_C_FLAGS="%{optflags}" \
-           -DCMAKE_CXX_FLAGS="%{optflags}" \
+           $sbin_merge_option \
+           -DCMAKE_C_FLAGS="$release_optflags" \
+           -DCMAKE_CXX_FLAGS="$release_optflags" \
 %if 0%{?ssl_default}
 %else
            -DWITH_AUTHENTICATION_CLIENT_PLUGINS=0 \

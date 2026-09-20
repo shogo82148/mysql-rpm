@@ -2,3 +2,4 @@
 *.build/
 *.build.bak/
 tmp/
+*.log
