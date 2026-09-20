@@ -1013,13 +1013,18 @@ mkdir release
   # Build again with profile data present
   rm -rf release
   mkdir release && pushd release
+  release_optflags="%{optflags}"
+  # See the LTO note above the initial release build.
+  if [ 0%{?amzn2027} -gt 0 ]; then
+    release_optflags=$(echo "$release_optflags" | sed -E -e 's/-flto=auto -ffat-lto-objects/ /')
+  fi
   cmake3 ../%{src_dir} \
            -DFPROFILE_USE=1 \
            -DBUILD_CONFIG=mysql_release \
            -DINSTALL_LAYOUT=RPM \
            -DCMAKE_BUILD_TYPE=RelWithDebInfo \
-           -DCMAKE_C_FLAGS="%{optflags}" \
-           -DCMAKE_CXX_FLAGS="%{optflags}" \
+           -DCMAKE_C_FLAGS="$release_optflags" \
+           -DCMAKE_CXX_FLAGS="$release_optflags" \
 %if 0%{?ssl_default}
 %else
            -DWITH_AUTHENTICATION_CLIENT_PLUGINS=0 \
