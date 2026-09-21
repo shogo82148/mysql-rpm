@@ -1,0 +1,50 @@
+#!/usr/bin/env perl
+
+use utf8;
+use strict;
+use warnings;
+use FindBin;
+use File::Basename;
+
+my $status = 0;
+
+sub execute {
+    my @arg = @_;
+    my $cmd = join " ", @arg;
+    print "executing: $cmd\n";
+    my $ret = system(@arg);
+    if ($ret != 0) {
+        print STDERR "::warning::failed to execute $cmd";
+        $status = 1;
+    }
+}
+
+sub package_name {
+    my $file = shift;
+    my $name = basename $file;
+    $name =~ s/-[0-9]+\.[0-9]+\.[0-9]+-[0-9]+\..*$//;
+    return $name;
+}
+
+sub upload {
+    my ($variant, $prefix) = @_;
+    while (my $rpm = <$FindBin::Bin/../$variant.build/RPMS/x86_64/*.x86_64.rpm>) {
+        my $package = package_name($rpm);
+        execute("aws", "s3", "cp", $rpm, "s3://shogo82148-rpm-temporary/$prefix/x86_64/$package/");
+    }
+    while (my $rpm = <$FindBin::Bin/../$variant.build/RPMS/aarch64/*.aarch64.rpm>) {
+        my $package = package_name($rpm);
+        execute("aws", "s3", "cp", $rpm, "s3://shogo82148-rpm-temporary/$prefix/aarch64/$package/");
+    }
+}
+
+upload "amazonlinux2023", "amazonlinux/2023";
+upload "amazonlinux2027", "amazonlinux/2027";
+upload "almalinux8", "almalinux/8";
+upload "almalinux9", "almalinux/9";
+upload "almalinux10", "almalinux/10";
+upload "rockylinux8", "rockylinux/8";
+upload "rockylinux9", "rockylinux/9";
+upload "rockylinux10", "rockylinux/10";
+
+exit $status;
