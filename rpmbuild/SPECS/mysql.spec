@@ -486,6 +486,7 @@ Obsoletes:      mysql < %{version}-%{release}
 Provides:       mysql = %{version}-%{release}
 Provides:       mysql%{?_isa} = %{version}-%{release}
 Obsoletes:      mysql8.4 < %{version}-%{release}
+Obsoletes:      mysql8.4-server < %{version}-%{release}
 
 %description    client
 This package contains the standard MySQL clients and administration
@@ -671,6 +672,7 @@ Conflicts:      mysql-cluster-community-client < 8.0.22
 Obsoletes:      mysql-community-client-plugins < %{version}-%{release}
 %endif
 %endif
+Obsoletes:      mysql8.4-server < %{version}-%{release}
 
 %description    client-plugins
 This package contains the client-plugins libraries used by MySQL client applications.
