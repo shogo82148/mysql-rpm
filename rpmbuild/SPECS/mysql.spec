@@ -153,8 +153,6 @@ Source0:        https://cdn.mysql.com/Downloads/MySQL-9.7/%{src_dir}.tar.gz
 Patch0:         mysql-timestamp-format-truncation.patch
 # Remove write-only MyISAM loop counters diagnosed by GCC 16.
 Patch1:         mysql-myisam-unused-counters.patch
-# Construct test session sockets before the base class accesses them.
-Patch2:         mysql-ndb-session-initialization.patch
 # Support RPM's -fno-delete-null-pointer-checks in bundled Abseil.
 Patch3:         mysql-abseil-constexpr-hash.patch
 # Message formatting does not depend on the object under construction.
@@ -488,7 +486,6 @@ Obsoletes:      mysql < %{version}-%{release}
 Provides:       mysql = %{version}-%{release}
 Provides:       mysql%{?_isa} = %{version}-%{release}
 Obsoletes:      mysql8.4 < %{version}-%{release}
-Obsoletes:      mysql8.4-server < %{version}-%{release}
 
 %description    client
 This package contains the standard MySQL clients and administration
@@ -674,7 +671,6 @@ Conflicts:      mysql-cluster-community-client < 8.0.22
 Obsoletes:      mysql-community-client-plugins < %{version}-%{release}
 %endif
 %endif
-Obsoletes:      mysql8.4-server < %{version}-%{release}
 
 %description    client-plugins
 This package contains the client-plugins libraries used by MySQL client applications.
@@ -854,7 +850,6 @@ trademark of %{mysql_vendor}
 %endif # 0%{?compatlib}
 %patch -P 0 -p1 -d %{src_dir}
 %patch -P 1 -p1 -d %{src_dir}
-%patch -P 2 -p1 -d %{src_dir}
 %patch -P 3 -p1 -d %{src_dir}
 %patch -P 4 -p1 -d %{src_dir}
 %patch -P 5 -p1 -d %{src_dir}
