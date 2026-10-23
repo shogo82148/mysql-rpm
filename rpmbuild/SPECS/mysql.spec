@@ -124,7 +124,7 @@
 # multiarch
 %global multiarchs            ppc %{power64} %{ix86} x86_64 %{sparc}
 
-%global src_dir               %{src_base}-9.7.2
+%global src_dir               %{src_base}-9.7.4
 
 %if 0%{?without_debuginfo}
 %global _enable_debug_package 0
@@ -145,7 +145,7 @@
 Name:           mysql%{?cluster:-cluster}-%{product_suffix}
 Summary:        A very fast and reliable SQL database server
 Group:          Applications/Databases
-Version:        9.7.2
+Version:        9.7.4
 Release:        1%{?commercial:.1}%{?dist}
 License:        Copyright (c) 2000, 2026, %{mysql_vendor}. Under %{?license_type} license as shown in the Description field.
 Source0:        https://cdn.mysql.com/Downloads/MySQL-9.7/%{src_dir}.tar.gz
@@ -153,8 +153,6 @@ Source0:        https://cdn.mysql.com/Downloads/MySQL-9.7/%{src_dir}.tar.gz
 Patch0:         mysql-timestamp-format-truncation.patch
 # Remove write-only MyISAM loop counters diagnosed by GCC 16.
 Patch1:         mysql-myisam-unused-counters.patch
-# Construct test session sockets before the base class accesses them.
-Patch2:         mysql-ndb-session-initialization.patch
 # Support RPM's -fno-delete-null-pointer-checks in bundled Abseil.
 Patch3:         mysql-abseil-constexpr-hash.patch
 # Message formatting does not depend on the object under construction.
@@ -185,6 +183,14 @@ Source7:        %{compatsrc}
 BuildRequires:  cmake >= 3.14.6
 BuildRequires:  libtirpc-devel
 BuildRequires:  rpcgen
+# rpcgen shells out to the system C preprocessor to generate
+# xdr_gen/xcom_vp.h. Without it rpcgen fails silently and xcom
+# fails to compile.
+# cpp is not declared explicitly in BuildRequires.
+# On el9/el10 yum-builddep's resolution pulls in gcc as a side effect,
+# and gcc itself requires cpp. On el8 this does not happen so it must
+# be declared explicitly.
+%{?el8:BuildRequires:  cpp}
 %else
 BuildRequires:  cmake3 >= 3.14.6
 %endif
@@ -234,12 +240,16 @@ BuildRequires:  binutils
 BuildRequires:  dwz
 BuildRequires:  gcc-c++
 BuildRequires:  gcc
-BuildRequires:  libfido2-devel
 %ifnarch aarch64
 BuildRequires:  libquadmath-devel
 %endif
-BuildRequires:  libudev-devel
 %endif # el10
+%if 0%{?rhel} >= 8
+# Needed to build the FIDO2/WebAuthn client plugin, configured similarly to
+# add_fido_plugins above to avoid configuration drift.
+BuildRequires:  libfido2-devel
+BuildRequires:  libudev-devel
+%endif # add_fido_plugins deps (el8+)
 BuildRequires:  bison >= 3.0.4
 BuildRequires:  elfutils
 BuildRequires:  patchelf
@@ -335,6 +345,7 @@ Requires:       openssl3-fips
 Requires:       %{name}-client%{?_isa} >= %{min}
 Requires:       %{name}-common%{?_isa} = %{version}-%{release}
 Requires:       %{name}-icu-data-files = %{version}-%{release}
+Obsoletes:      mysql8.4-server < %{version}-%{release}
 %if 0%{?commercial}
 Obsoletes:      mysql-commercial-bench < 5.7.8
 Obsoletes:      mysql-commercial-embedded < 8.0.1
@@ -384,6 +395,20 @@ Obsoletes:      mariadb-server-utils
 Obsoletes:      mariadb-galera-server
 Obsoletes:      mariadb-gssapi-server
 Obsoletes:      mariadb-oqgraph-engine
+%if 0%{?rhel} == 10
+# EL10 packages the MariaDB stack with versioned names. Obsolete the full
+# versioned stack so DNF does not select it alongside MySQL and hit file
+# conflicts on shared client/server binaries.
+Obsoletes:      mariadb11.8
+Obsoletes:      mariadb11.8-common
+Obsoletes:      mariadb11.8-errmsg
+Obsoletes:      mariadb11.8-backup
+Obsoletes:      mariadb11.8-cracklib-password-check
+Obsoletes:      mariadb11.8-gssapi-server
+Obsoletes:      mariadb11.8-server
+Obsoletes:      mariadb11.8-server-utils
+Obsoletes:      mariadb11.8-client-utils
+%endif
 Provides:       mysql-server = %{version}-%{release}
 Provides:       mysql-server%{?_isa} = %{version}-%{release}
 Provides:       mysql-compat-server = %{version}-%{release}
@@ -460,6 +485,8 @@ Obsoletes:      mariadb-client-utils
 Obsoletes:      mysql < %{version}-%{release}
 Provides:       mysql = %{version}-%{release}
 Provides:       mysql%{?_isa} = %{version}-%{release}
+Obsoletes:      mysql8.4 < %{version}-%{release}
+Obsoletes:      mysql8.4-server < %{version}-%{release}
 
 %description    client
 This package contains the standard MySQL clients and administration
@@ -483,6 +510,8 @@ Obsoletes:      mysql-cluster-community-common < %{version}-%{release}
 %endif
 Provides:       mysql-common = %{version}-%{release}
 Provides:       mysql-common%{?_isa} = %{version}-%{release}
+Obsoletes:      mysql8.4-common < %{version}-%{release}
+Obsoletes:      mysql8.4-errmsg < %{version}-%{release}
 
 %description    common
 This packages contains common files needed by MySQL client library and
@@ -520,6 +549,8 @@ Requires:       perl(POSIX)
 Requires:       perl(Sys::Hostname)
 Requires:       perl(Time::HiRes)
 Requires:       perl(Time::localtime)
+Requires:       perl(lib)
+Requires:       openssl
 %if 0%{?cluster}
 Requires:       %{name}-data-node%{?_isa} >= %{min}
 Requires:       %{name}-management-server%{?_isa} >= %{min}
@@ -641,6 +672,7 @@ Conflicts:      mysql-cluster-community-client < 8.0.22
 Obsoletes:      mysql-community-client-plugins < %{version}-%{release}
 %endif
 %endif
+Obsoletes:      mysql8.4-server < %{version}-%{release}
 
 %description    client-plugins
 This package contains the client-plugins libraries used by MySQL client applications.
@@ -820,7 +852,6 @@ trademark of %{mysql_vendor}
 %endif # 0%{?compatlib}
 %patch -P 0 -p1 -d %{src_dir}
 %patch -P 1 -p1 -d %{src_dir}
-%patch -P 2 -p1 -d %{src_dir}
 %patch -P 3 -p1 -d %{src_dir}
 %patch -P 4 -p1 -d %{src_dir}
 %patch -P 5 -p1 -d %{src_dir}
@@ -917,6 +948,9 @@ mkdir debug
            -DCMAKE_CXX_FLAGS="$optflags" \
 %if 0%{?ssl_default}
            -DWITH_AUTHENTICATION_CLIENT_PLUGINS=1 \
+%if 0%{?add_fido_plugins} == 0
+           -DWITH_AUTHENTICATION_WEBAUTHN=0 \
+%endif # add_fido_plugins
 %else
            -DWITH_AUTHENTICATION_CLIENT_PLUGINS=0 \
            -DWITH_AUTHENTICATION_WEBAUTHN=0 \
@@ -985,6 +1019,9 @@ mkdir release
            -DCMAKE_CXX_FLAGS="$release_optflags" \
 %if 0%{?ssl_default}
            -DWITH_AUTHENTICATION_CLIENT_PLUGINS=1 \
+%if 0%{?add_fido_plugins} == 0
+           -DWITH_AUTHENTICATION_WEBAUTHN=0 \
+%endif # add_fido_plugins
 %else
            -DWITH_AUTHENTICATION_CLIENT_PLUGINS=0 \
            -DWITH_AUTHENTICATION_WEBAUTHN=0 \
@@ -1054,6 +1091,9 @@ mkdir release
            -DCMAKE_C_FLAGS="$release_optflags" \
            -DCMAKE_CXX_FLAGS="$release_optflags" \
 %if 0%{?ssl_default}
+%if 0%{?add_fido_plugins} == 0
+           -DWITH_AUTHENTICATION_WEBAUTHN=0 \
+%endif # add_fido_plugins
 %else
            -DWITH_AUTHENTICATION_CLIENT_PLUGINS=0 \
            -DWITH_AUTHENTICATION_FIDO=0 \
@@ -1360,6 +1400,11 @@ fi
 %dir %{_libdir}/mysql/plugin
 %attr(755, root, root) %{_libdir}/mysql/plugin/adt_null.so
 %attr(755, root, root) %{_libdir}/mysql/plugin/auth_socket.so
+%if 0%{?ssl_default}
+%if 0%{?add_fido_plugins}
+%attr(755, root, root) %{_libdir}/mysql/plugin/authentication_webauthn.so
+%endif # add_fido_plugins
+%endif # ssl_default
 %attr(755, root, root) %{_libdir}/mysql/plugin/group_replication.so
 %attr(755, root, root) %{_libdir}/mysql/plugin/component_log_sink_syseventlog.so
 %attr(755, root, root) %{_libdir}/mysql/plugin/component_log_sink_json.so
@@ -1408,9 +1453,6 @@ fi
 %attr(644, root, root) %{_datadir}/mysql-*/audit_log_component_filter_uninstall.sql
 %attr(755, root, root) %{_libdir}/mysql/plugin/authentication_pam.so
 %if 0%{?ssl_default}
-%if 0%{?add_fido_plugins}
-%attr(755, root, root) %{_libdir}/mysql/plugin/authentication_webauthn.so
-%endif # add_fido_plugins
 %attr(755, root, root) %{_libdir}/mysql/plugin/authentication_kerberos.so
 %attr(755, root, root) %{_libdir}/mysql/plugin/authentication_openid_connect.so
 %attr(755, root, root) %{_libdir}/mysql/plugin/authentication_ldap_sasl.so
@@ -1474,6 +1516,11 @@ fi
 %dir %{_libdir}/mysql/plugin/debug
 %attr(755, root, root) %{_libdir}/mysql/plugin/debug/adt_null.so
 %attr(755, root, root) %{_libdir}/mysql/plugin/debug/auth_socket.so
+%if 0%{?ssl_default}
+%if 0%{?add_fido_plugins}
+%attr(755, root, root) %{_libdir}/mysql/plugin/debug/authentication_webauthn.so
+%endif # add_fido_plugins
+%endif # ssl_default
 %attr(755, root, root) %{_libdir}/mysql/plugin/debug/group_replication.so
 %attr(755, root, root) %{_libdir}/mysql/plugin/debug/component_log_sink_syseventlog.so
 %attr(755, root, root) %{_libdir}/mysql/plugin/debug/component_log_sink_json.so
@@ -1517,9 +1564,6 @@ fi
 %attr(755, root, root) %{_libdir}/mysql/plugin/debug/component_audit_log.so
 %attr(755, root, root) %{_libdir}/mysql/plugin/debug/authentication_pam.so
 %if 0%{?ssl_default}
-%if 0%{?add_fido_plugins}
-%attr(755, root, root) %{_libdir}/mysql/plugin/debug/authentication_webauthn.so
-%endif # add_fido_plugins
 %attr(755, root, root) %{_libdir}/mysql/plugin/debug/authentication_kerberos.so
 %attr(755, root, root) %{_libdir}/mysql/plugin/debug/authentication_openid_connect.so
 %attr(755, root, root) %{_libdir}/mysql/plugin/debug/authentication_ldap_sasl.so
