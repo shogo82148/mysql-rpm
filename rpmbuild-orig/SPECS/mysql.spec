@@ -124,7 +124,7 @@
 # multiarch
 %global multiarchs            ppc %{power64} %{ix86} x86_64 %{sparc}
 
-%global src_dir               %{src_base}-9.7.4
+%global src_dir               %{src_base}-9.7.4.1
 
 %if 0%{?without_debuginfo}
 %global _enable_debug_package 0
@@ -145,7 +145,7 @@
 Name:           mysql%{?cluster:-cluster}-%{product_suffix}
 Summary:        A very fast and reliable SQL database server
 Group:          Applications/Databases
-Version:        9.7.4
+Version:        9.7.4.1
 Release:        1%{?commercial:.1}%{?dist}
 License:        Copyright (c) 2000, 2026, %{mysql_vendor}. Under %{?license_type} license as shown in the Description field.
 Source0:        https://cdn.mysql.com/Downloads/MySQL-9.7/%{src_dir}.tar.gz
